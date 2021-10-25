@@ -4,7 +4,6 @@ div.indicators-wrapper
 </template>
 <script>
 import {ref, watch} from 'vue'
-const MAX_VISIBLE_INDICATORS = 4
 export default {
   props: {
     length: {
@@ -14,12 +13,17 @@ export default {
     current: {
       type: Number,
       required: true,
+    },
+    maxVisibleIndicators: {
+      type: Number,
+      default: 4,
+      validator: (val) => val >=3
     }
   },
   setup(props) {
     const indicators = ref(Array.from({length: props.length}, (v, k) => k))
     const min = ref(0)
-    const max = ref(MAX_VISIBLE_INDICATORS)
+    const max = ref(props.maxVisibleIndicators)
     const getIndicatorClass = (ref) => {
       if (ref === props.current) {
       return 'active';
@@ -38,21 +42,19 @@ export default {
       }
       
       return 'hidden';
-      }
-  
-    watch(() => props.current, (val) => {
+    }
 
-      console.log('wtf')
+    const calculate = () => {
 
       if (min.value - 1 >= 0 ) {
-        if (val === min.value) {
-          min.value = val - 1
-          max.value = min.value + MAX_VISIBLE_INDICATORS
+        if (props.current === min.value) {
+          min.value = props.current - 1
+          max.value = min.value + props.maxVisibleIndicators
         }
 
-        if (val === min.value + 1) {
-          min.value = val - 2
-          max.value = min.value + MAX_VISIBLE_INDICATORS
+        if (props.current === min.value + 1) {
+          min.value = props.current - 2
+          max.value = min.value + props.maxVisibleIndicators
         }
 
         if (max.value > props.length) {
@@ -62,23 +64,23 @@ export default {
 
 
       if (max.value + 1 < props.length) {
-        if (val === max.value) {
-          max.value = val + 1
-          min.value = max.value - MAX_VISIBLE_INDICATORS;
+        if (props.current === max.value) {
+          max.value = props.current + 1
+          min.value = max.value - props.maxVisibleIndicators
         }
-        if (val === max.value - 1) {
-          max.value = val + 2
-          min.value = max.value - MAX_VISIBLE_INDICATORS;
+        if (props.current === max.value - 1) {
+          max.value = props.current + 2
+          min.value = max.value - props.maxVisibleIndicators
         }
         if (min.value < 0) {
           min.value = 0
         }
       }
+    }
+  
+    watch(() => props.current, calculate)
+    watch(() => props.maxVisibleIndicators, calculate)
 
-
-      console.log(min.value, max.value, val)
-
-    })
     return {
       indicators,
       getIndicatorClass
@@ -92,11 +94,11 @@ export default {
     justify-content: center
     align-items: center
     span
-      width: 5px
-      height: 5px
+      width: 10px
+      height: 10px
       margin: 2px
       border-radius: 50%
-      background-color: #d3d3d3
+      background-color: #EEEEEE
       overflow: hidden
       transition: all 500ms ease-out
       text-indent: -9999px
@@ -105,22 +107,19 @@ export default {
       &:last-child
         margin-right: 20px
     .active
-      width: 8px
-      height: 8px
-      margin: 1px
-      background-color: blue
+      background-color: red
     .small
-      width: 4px
-      height: 4px
-      margin: 3px
+      width: 6px
+      height: 6px
+      margin: 4px
       &:first-child
         margin-left: 10px
       &:last-child
         margin-right: 10px
     .micro
-      width: 2px
-      height: 2px
-      margin: 4px
+      width: 4px
+      height: 4px
+      margin: 6px
     .hidden
       width: 0
       height: 0
